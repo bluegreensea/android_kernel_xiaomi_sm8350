@@ -16,20 +16,21 @@ jobs:
       - name: Update and install required packages
         run: |
           sudo apt update
-          sudo apt install -y libc6-dev clang flex bison libssl-dev bc python3 zip unzip lld llvm p7zip-full
+          sudo apt install -y libc6-dev clang flex bison libssl-dev bc python3 zip unzip lld llvm p7zip-full jq
       - name: Prepare magiskboot
         run: |
           mkdir -p $GITHUB_WORKSPACE/output
           cd $GITHUB_WORKSPACE/output
-          curl -L -o magiskboot.7z https://github.com/xiaoxindada/magiskboot_ndk_on_linux/releases/download/Magiskboot-27006-69/magiskboot.7z
+          curl -L -o magiskboot.7z "https://github.com/xiaoxindada/magisk_bins_ndk/releases/download/magisk_bins-29001-cf09f1c1061138652a435cba3e675508730b0464/magisk_bins.7z"
           7z x magiskboot.7z
-          cp ./out/x86/magiskboot .
+          cp ./native/out/x86_64/magiskboot .
           chmod +x magiskboot
           rm -rf ./out
       - name: Prepare boot.img
         run: |
           cd $GITHUB_WORKSPACE/output
-          curl -L -o boot.img "https://github.com/likkai/android_kernel_xiaomi_sm8350/releases/download/ori-0.1.0/boot.img"
+          export lineageos_ver=$(curl -LfsG "https://download.lineageos.org/api/v1/lisa/nightly/0" | jq -r '.response[0].filename' | cut -d- -f3)                                                                       
+          curl -L -o boot.img "https://mirrorbits.lineageos.org/full/lisa/$lineageos_ver/boot.img"
       - name: Prepare required toolchains
         run: |
           mkdir -p $GITHUB_WORKSPACE/toolchains
@@ -52,7 +53,7 @@ jobs:
       - name: Install KernelSU
         run: |
           cd $GITHUB_WORKSPACE
-          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
+          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s
       - name: Build Kernel
         run: |
           chmod +x build.sh
