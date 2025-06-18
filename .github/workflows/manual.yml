@@ -66,6 +66,7 @@ jobs:
           
           # Copy SUSFS patches
           cp ./susfs4ksu/kernel_patches/50_add_susfs_in_kernel-5.4.patch ./
+          patch -p1 --forward --fuzz=3 < 50_add_susfs_in_kernel-5.4-fix.patch
           patch -p1 --forward --fuzz=3 < 50_add_susfs_in_kernel-5.4.patch
           cp ./susfs4ksu/kernel_patches/fs/* ./fs/
           cp ./susfs4ksu/kernel_patches/include/linux/* ./include/linux/
@@ -151,7 +152,7 @@ jobs:
           echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> ./arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> ./arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> ./arch/arm64/configs/gki_defconfig
-          echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> ./arch/arm64/configs/gki_defconfig
+          #echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> ./arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./arch/arm64/configs/gki_defconfig
 
           echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./arch/arm64/configs/gki_defconfig
