@@ -29,7 +29,8 @@ jobs:
       - name: Prepare boot.img
         run: |
           cd $GITHUB_WORKSPACE/output
-          export lineageos_ver=$(curl -LfsG "https://download.lineageos.org/api/v1/lisa/nightly/0" | jq -r '.response[0].filename' | cut -d- -f3)                                                                       
+          export lineageos_ver=$(curl -LfsG "https://download.lineageos.org/api/v1/lisa/nightly/0" | jq -r '.response[0].filename' | cut -d- -f3)   
+          echo "RELEASE_TAG=$lineageos_ver" >> $GITHUB_ENV                                                                    
           curl -L -o boot.img "https://mirrorbits.lineageos.org/full/lisa/$lineageos_ver/boot.img"
       - name: Prepare required toolchains
         run: |
@@ -71,3 +72,8 @@ jobs:
         with:
           name: new-boot
           path: /home/runner/work/android_kernel_xiaomi_sm8350/android_kernel_xiaomi_sm8350/output/new-boot.img
+      - name: Upload Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          files: /home/runner/work/android_kernel_xiaomi_sm8350/android_kernel_xiaomi_sm8350/output/new-boot.img
