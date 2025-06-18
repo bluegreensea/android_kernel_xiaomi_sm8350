@@ -51,10 +51,41 @@ jobs:
           done
           # Export path
           export PATH="$GITHUB_WORKSPACE/toolchains/linux-x86/$latest_clang/bin:$PATH"
+      - name: Clone SUSFS patches
+        run: |
+          git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "kernel-5.4"
+          git clone https://github.com/WildPlusKernel/kernel_patches.git
       - name: Install KernelSU
         run: |
           cd $GITHUB_WORKSPACE
           curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s
+      - name: Apply SUSFS Patches
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          
+          # Copy SUSFS patches
+          cp ../susfs4ksu/kernel_patches/50_add_susfs_in_kernel-5.4.patch ./common/
+          cd common
+          patch -p1 --forward --fuzz=3 < 50_add_susfs_in_kernel-5.4.patch
+          cd ..
+          cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
+          cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
+          
+          echo "Applying SUSFS patches for KernelSU Next..."
+          cd ./KernelSU-Next
+          cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+          patch -p1 --forward --fuzz=3 < 10_enable_susfs_for_ksu.patch || true
+          cp ../../kernel_patches/next/fix_apk_sign.c.patch ./
+          patch -p1 --forward --fuzz=3 < fix_apk_sign.c.patch
+          cp ../../kernel_patches/next/fix_core_hook.c.patch ./
+          patch -p1 --forward --fuzz=3 < fix_core_hook.c.patch
+          cp ../../kernel_patches/next/fix_selinux.c.patch ./
+          patch -p1 --forward --fuzz=3 < fix_selinux.c.patch
+          cp ../../kernel_patches/next/fix_ksud.c.patch ./
+          patch -p1 --forward --fuzz=3 < fix_ksud.c.patch
+          #cp ../../kernel_patches/next/fix_sucompat.c.patch ./
+          #patch -p1 --forward --fuzz=3 < fix_sucompat.c.patch
+          #sed -i '/bool ksu_devpts_hook = false;/d' ./kernel/sucompat.c
       - name: Build Kernel
         run: |
           chmod +x build.sh
