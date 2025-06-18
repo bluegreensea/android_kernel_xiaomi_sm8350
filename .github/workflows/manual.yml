@@ -79,8 +79,8 @@ jobs:
           patch -p1 --forward --fuzz=3 < fix_apk_sign.c.patch
           cp ../kernel_patches/next/fix_core_hook.c.patch ./
           patch -p1 --forward --fuzz=3 < fix_core_hook.c.patch
-          cp ../kernel_patches/next/fix_selinux.c.patch ./
-          patch -p1 --forward --fuzz=3 < fix_selinux.c.patch
+          #cp ../kernel_patches/next/fix_selinux.c.patch ./
+          #patch -p1 --forward --fuzz=3 < fix_selinux.c.patch
           cp ../kernel_patches/next/fix_ksud.c.patch ./
           patch -p1 --forward --fuzz=3 < fix_ksud.c.patch
           #cp ../kernel_patches/next/fix_sucompat.c.patch ./
