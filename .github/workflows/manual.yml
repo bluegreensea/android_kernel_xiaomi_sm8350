@@ -160,7 +160,7 @@ jobs:
           echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=n" >> ./arch/arm64/configs/lisa_defconfig
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./arch/arm64/configs/lisa_defconfig
 
-          #echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./arch/arm64/configs/lisa_defconfig
+          echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./arch/arm64/configs/lisa_defconfig
       - name: Build Kernel
         run: |
           chmod +x build.sh
