@@ -92,7 +92,7 @@ jobs:
         run: |
           cd "$GITHUB_WORKSPACE"
           
-          cp ../kernel_patches/hooks/ksu_hooks_4.14.patch ./
+          cp ./kernel_patches/hooks/ksu_hooks_4.14.patch ./
           patch -p1 -F 3 < ksu_hooks_4.14.patch
           
           echo "Applying hooks for KernelSU-Next..."
