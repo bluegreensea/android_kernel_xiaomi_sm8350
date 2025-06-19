@@ -142,17 +142,6 @@ diff --color -Naur a/10_enable_susfs_for_ksu.patch b/10_enable_susfs_for_ksu.pat
   static inline bool is_allow_su()
   {
  -	if (is_manager()) {
-@@ -919,8 +829,8 @@
-  
- +#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
- +	// check if current process is zygote
--+	bool is_zygote_child = susfs_is_sid_equal(old->security, susfs_zygote_sid);
--+	if (likely(is_zygote_child)) {
-++	bool susfs_is_zygote_child = susfs_is_sid_equal(old->security, susfs_zygote_sid);
-++	if (likely(susfs_is_zygote_child)) {
- +		// if spawned process is non user app process
- +		if (unlikely(new_uid.val < 10000 && new_uid.val >= 1000)) {
- +			// umount for the system process if path DATA_ADB_UMOUNT_FOR_ZYGOTE_SYSTEM_PROCESS exists
 @@ -952,7 +862,7 @@
   	if (!ksu_uid_should_umount(new_uid.val)) {
   		return 0;
