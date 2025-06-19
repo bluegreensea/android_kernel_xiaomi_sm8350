@@ -1,6 +1,6 @@
 diff --color -Naur a/10_enable_susfs_for_ksu.patch b/10_enable_susfs_for_ksu.patch
 --- a/10_enable_susfs_for_ksu.patch	2025-06-19 16:42:54.709913341 +0800
-+++ b/10_enable_susfs_for_ksu.patch	2025-06-19 18:26:44.335694136 +0800
++++ b/10_enable_susfs_for_ksu.patch	2025-06-19 20:26:56.343932464 +0800
 @@ -155,103 +155,10 @@
  index 66929756..10cd0f99 100644
  --- a/kernel/Makefile
@@ -153,35 +153,16 @@ diff --color -Naur a/10_enable_susfs_for_ksu.patch b/10_enable_susfs_for_ksu.pat
  +		// if spawned process is non user app process
  +		if (unlikely(new_uid.val < 10000 && new_uid.val >= 1000)) {
  +			// umount for the system process if path DATA_ADB_UMOUNT_FOR_ZYGOTE_SYSTEM_PROCESS exists
-@@ -952,26 +862,7 @@
+@@ -952,7 +862,7 @@
   	if (!ksu_uid_should_umount(new_uid.val)) {
   		return 0;
   	} else {
 -@@ -539,31 +999,39 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
-- #endif
-- 	}
-- 
--+#ifndef CONFIG_KSU_SUSFS_SUS_MOUNT
-- 	// check old process's selinux context, if it is not zygote, ignore it!
-- 	// because some su apps may setuid to untrusted_app but they are in global mount namespace
-- 	// when we umount for such process, that is a disaster!
---	bool is_zygote_child = is_zygote(old->security);
--+	bool is_zygote_child = ksu_is_zygote(old->security);
--+#endif
-- 	if (!is_zygote_child) {
-- 		pr_info("handle umount ignore non zygote child: %d\n",
-- 			current->pid);
-- 		return 0;
-- 	}
--+
-- #ifdef CONFIG_KSU_DEBUG
-- 	// umount the target mnt
-- 	pr_info("handle umount for uid: %d, pid: %d\n", new_uid.val,
-+@@ -1108,25 +1139,30 @@
-  		current->pid);
++@@ -539,40 +999,48 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
   #endif
+  	}
   
-@@ -981,11 +872,15 @@
+@@ -981,11 +891,15 @@
  +#else
   	// fixme: use `collect_mounts` and `iterate_mount` to iterate all mountpoint and
   	// filter the mountpoint whose target is `/data/adb`
@@ -197,7 +178,7 @@ diff --color -Naur a/10_enable_susfs_for_ksu.patch b/10_enable_susfs_for_ksu.pat
  +	ksu_try_umount("/vendor", true, 0);
  +	ksu_try_umount("/product", true, 0);
  +	ksu_try_umount("/data/adb/modules", false, MNT_DETACH);
-@@ -995,6 +890,16 @@
+@@ -995,6 +909,16 @@
  -	try_umount("/sbin", false, MNT_DETACH);
  +	ksu_try_umount("/debug_ramdisk", false, MNT_DETACH);
  +	ksu_try_umount("/sbin", false, MNT_DETACH);
