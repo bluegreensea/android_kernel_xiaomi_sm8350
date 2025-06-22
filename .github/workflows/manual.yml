@@ -36,7 +36,7 @@ jobs:
         run: |
           mkdir -p $GITHUB_WORKSPACE/toolchains
           cd $GITHUB_WORKSPACE/toolchains
-          git clone https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 --single-branch --depth=1
+          git clone https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 --branch=main-kernel-build-2024 --depth=1
       - name: Remove unnecessary tools
         run: |
           cd $GITHUB_WORKSPACE/toolchains/linux-x86
