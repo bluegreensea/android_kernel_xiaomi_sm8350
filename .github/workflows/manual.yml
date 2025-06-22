@@ -6,6 +6,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
+      CCACHE_NOHASHDIR: "true"
+      CCACHE_HARDLINK: "true"
 
     steps:
       - name: Checkout the repository
@@ -16,7 +20,13 @@ jobs:
       - name: Update and install required packages
         run: |
           sudo apt update
-          sudo apt install -y libc6-dev clang flex bison libssl-dev bc python3 zip unzip lld llvm p7zip-full jq
+          sudo apt install -y libc6-dev clang flex bison libssl-dev bc python3 zip unzip lld llvm p7zip-full ccache jq
+      - name: Set up ccache
+        run: |
+          ccache --version
+          ccache --max-size=2G
+          ccache --set-config=compression=true
+          echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
       - name: Prepare magiskboot
         run: |
           mkdir -p $GITHUB_WORKSPACE/output
@@ -164,7 +174,7 @@ jobs:
       - name: Build Kernel
         run: |
           chmod +x build.sh
-          ./build.sh
+          LTO=thin ./build.sh
           cp $GITHUB_WORKSPACE/out/arch/arm64/boot/Image $GITHUB_WORKSPACE/output
       - name: Modify boot.img
         run: |
