@@ -16,6 +16,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          path: common
 
       - name: Update and install required packages
         run: |
@@ -72,30 +73,30 @@ jobs:
           curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s
       - name: Apply SUSFS Patches
         run: |
-          cd "$GITHUB_WORKSPACE"
-          
+          cd "$GITHUB_WORKSPACE/common"
+            
           # Copy SUSFS patches
-          cp ./susfs4ksu/kernel_patches/50_add_susfs_in_kernel-5.4.patch ./
+          cp ../susfs4ksu/kernel_patches/50_add_susfs_in_kernel-5.4.patch ./
           patch -p1 --forward --fuzz=3 < fix_50_add_susfs_in_kernel-5.4.patch.patch
           patch -p1 --forward --fuzz=3 < 50_add_susfs_in_kernel-5.4.patch
-          cp ./susfs4ksu/kernel_patches/fs/* ./fs/
-          cp ./susfs4ksu/kernel_patches/include/linux/* ./include/linux/
+          cp ../susfs4ksu/kernel_patches/fs/* ./fs/
+          cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
           
           echo "Applying SUSFS patches for KernelSU Next..."
           cd ./KernelSU-Next
-          cp ../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+          cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
           cp ../fix_10_enable_susfs_for_ksu.patch.patch ./
           patch -p1 --forward --fuzz=3 < fix_10_enable_susfs_for_ksu.patch.patch
           patch -p1 --forward --fuzz=3 < 10_enable_susfs_for_ksu.patch || true
-          cp ../kernel_patches/next/fix_apk_sign.c.patch ./
+          cp ../../kernel_patches/next/fix_apk_sign.c.patch ./
           patch -p1 --forward --fuzz=3 < fix_apk_sign.c.patch
-          #cp ../kernel_patches/next/fix_core_hook.c.patch ./
+          #cp ../../kernel_patches/next/fix_core_hook.c.patch ./
           #patch -p1 --forward --fuzz=3 < fix_core_hook.c.patch
-          #cp ../kernel_patches/next/fix_selinux.c.patch ./
+          #cp ../../kernel_patches/next/fix_selinux.c.patch ./
           #patch -p1 --forward --fuzz=3 < fix_selinux.c.patch
-          cp ../kernel_patches/next/fix_ksud.c.patch ./
+          cp ../../kernel_patches/next/fix_ksud.c.patch ./
           patch -p1 --forward --fuzz=3 < fix_ksud.c.patch
-          cp ../kernel_patches/next/fix_sucompat.c.patch ./
+          cp ../../kernel_patches/next/fix_sucompat.c.patch ./
           patch -p1 --forward --fuzz=3 < fix_sucompat.c.patch
           #sed -i '/bool ksu_devpts_hook = false;/d' ./kernel/sucompat.c
       - name: Apply Hooks Patches
@@ -113,16 +114,9 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           cp ./kernel_patches/69_hide_stuff.patch ./
           patch -p1 -F 3 < 69_hide_stuff.patch
-      - name: Add All Managers
-        run: |
-          cd "$GITHUB_WORKSPACE"
-          echo "Applying Manager patch for KernelSU Next..."
-          cd KernelSU-Next
-          cp ../kernel_patches/next/manager.patch ./
-          patch -p1 --fuzz=3 < manager.patch || echo "No Manager Patch"
       - name: Add Configuration Settings
         run: |
-          cd "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE/common"
           echo "Adding configuration settings to lisa_defconfig..."
 
           # Add KSU configuration settings
@@ -151,7 +145,7 @@ jobs:
           sed -i 's/check_defconfig//' ./build.config.gki
       - name: Add SUSFS Configuration Settings
         run: |
-          cd "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE/common"
 
           # Add SUSFS configuration settings
           echo "CONFIG_KSU_SUSFS=y" >> ./arch/arm64/configs/lisa_defconfig
@@ -175,7 +169,7 @@ jobs:
         run: |
           chmod +x build.sh
           LTO=thin ./build.sh
-          cp $GITHUB_WORKSPACE/out/arch/arm64/boot/Image $GITHUB_WORKSPACE/output
+          cp $GITHUB_WORKSPACE/common/out/arch/arm64/boot/Image $GITHUB_WORKSPACE/output
       - name: Modify boot.img
         run: |
           cd $GITHUB_WORKSPACE/output
