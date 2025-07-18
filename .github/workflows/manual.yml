@@ -69,7 +69,7 @@ jobs:
           git clone https://github.com/WildPlusKernel/kernel_patches.git
       - name: Install KernelSU
         run: |
-          cd $GITHUB_WORKSPACE
+          cd "$GITHUB_WORKSPACE/common"
           curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s
       - name: Apply SUSFS Patches
         run: |
