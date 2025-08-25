@@ -1,0 +1,53 @@
+--- a/50_add_susfs_in_gki-android15-6.6.patch	2025-08-25 16:22:46.546968236 +0800
++++ b_namespace/50_add_susfs_in_gki-android15-6.6.patch	2025-08-25 22:32:26.911957501 +0800
+@@ -643,18 +643,16 @@
+ index 08d502aae6f9..7b6cb9a56aae 100644
+ --- a/fs/namespace.c
+ +++ b/fs/namespace.c
+-@@ -32,12 +32,38 @@
++@@ -32,10 +32,36 @@
++ #include <uapi/linux/mount.h>
+  #include <linux/fs_context.h>
+  #include <linux/shmem_fs.h>
+- #include <linux/mnt_idmapping.h>
+ +#if defined(CONFIG_KSU_SUSFS_SUS_MOUNT) || defined(CONFIG_KSU_SUSFS_TRY_UMOUNT)
+ +#include <linux/susfs_def.h>
+ +#endif
+  
+  #include "pnode.h"
+  #include "internal.h"
+- #include <trace/hooks/blk.h>
+- #include <trace/hooks/fs.h>
+  
+ +#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+ +extern bool susfs_is_current_ksu_domain(void);
+@@ -680,7 +678,7 @@
+ +#endif
+ +
+  /* Maximum number of mounts in a mount namespace */
+- static unsigned int sysctl_mount_max __read_mostly = 100000;
++ unsigned int sysctl_mount_max __read_mostly = 100000;
+  
+ @@ -126,6 +152,18 @@ static inline struct hlist_head *mp_hash(struct dentry *dentry)
+  	return &mountpoint_hashtable[tmp & mp_hash_mask];
+@@ -797,10 +795,10 @@
+  		if (err)
+  			goto out_free_cache;
+  
+-@@ -1085,11 +1183,26 @@ static struct mount *skip_mnt_tree(struct mount *p)
+- struct vfsmount *vfs_create_mount(struct fs_context *fc)
++@@ -1085,12 +1183,27 @@ static struct mount *skip_mnt_tree(struct mount *p)
+  {
+  	struct mount *mnt;
++ 	struct super_block *sb;
+ +#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+ +	struct mount *m;
+ +	struct mnt_namespace *mnt_ns;
+@@ -809,6 +807,7 @@
+  
+  	if (!fc->root)
+  		return ERR_PTR(-EINVAL);
++ 	sb = fc->root->d_sb;
+  
+ +#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+ +	// For newly created mounts, the only caller process we care is KSU
