@@ -66,7 +66,6 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "gki-android15-6.6"
-          cd susfs4ksu && git reset --hard bade6e81 && cd ..
           git clone https://github.com/WildPlusKernel/kernel_patches.git
       - name: Install KernelSU
         run: |
@@ -78,13 +77,19 @@ jobs:
           
           # Copy SUSFS patches
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android15-6.6.patch ./
+          patch -p1 --forward < fix+fs_Makefile+50_add_susfs_in_gki-android15-6.6.patch.patch
+          patch -p1 --forward < fix+fs_exec.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+namei.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+namespace.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+fdinfo.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          patch -p1 --forward < fix+fs_open.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+bootconfig.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+fd.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          patch -p1 --forward < fix+fs_proc_task_mmu.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          patch -p1 --forward < fix+fs_readdir.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+stat.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < 50_add_susfs_in_gki-android15-6.6.patch
+          patch -p1 --forward < fix+include_linux_mount.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          patch -p1 --forward < fix+security_selinux_avc.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           cp ../susfs4ksu/kernel_patches/fs/* ./fs/
           cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
           

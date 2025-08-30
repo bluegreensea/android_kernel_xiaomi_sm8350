@@ -1,7 +1,7 @@
---- a/50_add_susfs_in_gki-android15-6.6.patch	2025-08-25 16:22:46.546968236 +0800
-+++ b_stat/50_add_susfs_in_gki-android15-6.6.patch	2025-08-25 22:33:01.479375306 +0800
-@@ -1920,9 +1920,9 @@
- index 517fa4ed885e..03410c2830a3 100644
+--- a/50_add_susfs_in_gki-android15-6.6.patch	2025-08-28 22:47:25.723972398 +0800
++++ fs_stat/50_add_susfs_in_gki-android15-6.6.patch	2025-08-30 01:07:25.347850941 +0800
+@@ -1923,9 +1923,9 @@
+ index 517fa4ed885e..c3aaf319068e 100644
  --- a/fs/stat.c
  +++ b/fs/stat.c
 -@@ -20,12 +20,19 @@
@@ -12,7 +12,7 @@
   
  +#if defined(CONFIG_KSU_SUSFS_SUS_KSTAT) || defined(CONFIG_KSU_SUSFS_SUS_MOUNT) || defined(CONFIG_KSU_SUSFS_SUS_SU)
  +#include <linux/susfs_def.h>
-@@ -1930,16 +1930,13 @@
+@@ -1933,20 +1933,17 @@
   #include <linux/uaccess.h>
   #include <asm/unistd.h>
   
@@ -28,12 +28,40 @@
 -  * @idmap:		idmap of the mount the inode was found from
 +  * @inode: Inode to use as the source
  @@ -49,6 +56,19 @@ void generic_fillattr(struct mnt_idmap *idmap, u32 request_mask,
-  	vfsuid_t vfsuid = i_uid_into_vfsuid(idmap, inode);
-  	vfsgid_t vfsgid = i_gid_into_vfsgid(idmap, inode);
-@@ -1970,22 +1967,6 @@
-  
-  	if (flags & ~(AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT | AT_EMPTY_PATH |
-  		      AT_STATX_SYNC_TYPE))
+- 	vfsuid_t vfsuid = i_uid_into_vfsuid(idmap, inode);
+- 	vfsgid_t vfsgid = i_gid_into_vfsgid(idmap, inode);
+- 
++  */
++ void generic_fillattr(struct inode *inode, struct kstat *stat)
++ {
+ +#ifdef CONFIG_KSU_SUSFS_SUS_KSTAT
+ +	if (likely(susfs_is_current_non_root_user_app_proc()) &&
+ +	    unlikely(inode->i_mapping->flags & BIT_SUS_KSTAT))
+@@ -1954,8 +1951,8 @@
+ +		susfs_sus_ino_for_generic_fillattr(inode->i_ino, stat);
+ +		stat->mode = inode->i_mode;
+ +		stat->rdev = inode->i_rdev;
+-+		stat->uid = vfsuid_into_kuid(vfsuid);
+-+		stat->gid = vfsgid_into_kgid(vfsgid);
+++		stat->uid = inode->i_uid;
+++		stat->gid = inode->i_gid;
+ +		return;
+ +	}
+ +#endif
+@@ -1963,35 +1960,9 @@
+  	stat->dev = inode->i_sb->s_dev;
+  	stat->ino = inode->i_ino;
+  	stat->mode = inode->i_mode;
+-@@ -235,6 +255,9 @@ static int vfs_statx(int dfd, struct filename *filename, int flags,
+- 	struct path path;
+- 	unsigned int lookup_flags = getname_statx_lookup_flags(flags);
+- 	int error;
+-+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+-+	struct mount *mnt;
+-+#endif
+- 
+- 	if (flags & ~(AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT | AT_EMPTY_PATH |
+- 		      AT_STATX_SYNC_TYPE))
 -@@ -247,7 +270,15 @@ static int vfs_statx(int dfd, struct filename *filename, int flags,
 - 
 - 	error = vfs_getattr(&path, stat, request_mask, flags);
@@ -51,16 +79,26 @@
 - 
 - 	if (path.mnt->mnt_root == path.dentry)
  @@ -271,6 +302,12 @@ static int vfs_statx(int dfd, struct filename *filename, int flags,
-  	return error;
+- 	return error;
   }
-@@ -1999,30 +1980,25 @@
-  int vfs_fstatat(int dfd, const char __user *filename,
-  			      struct kstat *stat, int flags)
-  {
++ EXPORT_SYMBOL(vfs_statx_fd);
+  
+ +#ifdef CONFIG_KSU_SUSFS_SUS_SU
+ +extern bool susfs_is_sus_su_hooks_enabled __read_mostly;
+@@ -1999,33 +1970,28 @@
+ +extern struct filename* susfs_ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);
+ +#endif
+ +
+- int vfs_fstatat(int dfd, const char __user *filename,
+- 			      struct kstat *stat, int flags)
+- {
 -@@ -295,7 +332,23 @@ int vfs_fstatat(int dfd, const char __user *filename,
 - 			return vfs_fstat(dfd, stat);
 - 	}
-+@@ -295,6 +332,18 @@ int vfs_fstatat(int dfd, const char __user *filename,
++ /**
++  * vfs_statx - Get basic and extra attributes by filename
++  * @dfd: A file descriptor representing the base dir for a relative filename
++@@ -172,6 +198,18 @@ int vfs_fstatat(int dfd, const char __user *filename,
 + 	int error = -EINVAL;
 + 	unsigned int lookup_flags = LOOKUP_FOLLOW | LOOKUP_AUTOMOUNT;
   
@@ -74,7 +112,7 @@
  +	{
 -+		name = susfs_ksu_handle_stat(&dfd, &filename, &statx_flags);
 -+		goto orig_flow2;
-++		ksu_handle_stat(&dfd, &filename, &flags);
+++		susfs_ksu_handle_stat(&dfd, &filename, &flags);
  +	}
 -+orig_flow1:
 ++orig_flow:
@@ -91,5 +129,5 @@
 + 		       AT_EMPTY_PATH | KSTAT_QUERY_FLAGS)) != 0)
 + 		return -EINVAL;
  diff --git a/fs/statfs.c b/fs/statfs.c
- index 2a37f9f3dba1..af5e5a6ca44c 100644
+ index 2a37f9f3dba1..c766a05d4c9c 100644
  --- a/fs/statfs.c

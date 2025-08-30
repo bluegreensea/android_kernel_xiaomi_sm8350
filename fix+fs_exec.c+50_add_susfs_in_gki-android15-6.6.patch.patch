@@ -1,0 +1,45 @@
+--- a/50_add_susfs_in_gki-android15-6.6.patch	2025-08-28 22:47:25.723972398 +0800
++++ fs_exec/50_add_susfs_in_gki-android15-6.6.patch	2025-08-30 02:05:35.288397498 +0800
+@@ -55,12 +55,10 @@
+  	if (dentry->d_sb->s_magic != DEVPTS_SUPER_MAGIC)
+  		return NULL;
+  	return dentry->d_fsdata;
+-diff --git a/fs/exec.c b/fs/exec.c
+-index cf487b0e49dd..3130a46aa4d5 100644
+---- a/fs/exec.c
+-+++ b/fs/exec.c
+-@@ -69,6 +69,9 @@
+- #include <linux/page_size_compat.h>
++--- a/fs/exec.c	2025-08-30 01:32:48.317595669 +0800
+++++ b/fs/exec.c	2025-08-30 01:58:33.076423732 +0800
++@@ -65,6 +65,9 @@
++ #include <linux/vmalloc.h>
+  
+  #include <linux/uaccess.h>
+ +#ifdef CONFIG_KSU_SUSFS_SUS_SU
+@@ -69,8 +67,8 @@
+  #include <asm/mmu_context.h>
+  #include <asm/tlb.h>
+  
+-@@ -1901,6 +1904,13 @@ static int bprm_execve(struct linux_binprm *bprm,
+- 	return retval;
++@@ -1742,6 +1745,13 @@
++ 	return ret;
+  }
+  
+ +#ifdef CONFIG_KSU_SUSFS_SUS_SU
+@@ -80,10 +78,10 @@
+ +				void *envp, int *flags);
+ +#endif
+ +
+- static int do_execveat_common(int fd, struct filename *filename,
+- 			      struct user_arg_ptr argv,
+- 			      struct user_arg_ptr envp,
+-@@ -1912,6 +1922,18 @@ static int do_execveat_common(int fd, struct filename *filename,
++ /*
++  * sys_execve() executes a new program.
++  */
++@@ -1758,6 +1768,18 @@
+  	if (IS_ERR(filename))
+  		return PTR_ERR(filename);
+  

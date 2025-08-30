@@ -1,0 +1,152 @@
+--- a/50_add_susfs_in_gki-android15-6.6.patch	2025-08-28 22:47:25.723972398 +0800
++++ fs_readdir/50_add_susfs_in_gki-android15-6.6.patch	2025-08-30 21:36:41.683955389 +0800
+@@ -1585,37 +1585,7 @@
+  
+  	buf->error = verify_dirent_name(name, namlen);
+  	if (unlikely(buf->error))
+-@@ -280,6 +353,29 @@ static bool filldir(struct dir_context *ctx, const char *name, int namlen,
+- 	prev_reclen = buf->prev_reclen;
+- 	if (prev_reclen && signal_pending(current))
+- 		return false;
+-+
+-+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+-+	if (buf->is_base_dentry_android_data_root_dir) {
+-+		if (susfs_is_sus_android_data_d_name_found(name)) {
+-+			return true;
+-+		}
+-+	} else if (buf->is_base_dentry_sdcard_root_dir) {
+-+		if (susfs_is_sus_sdcard_d_name_found(name)) {
+-+			return true;
+-+		}
+-+	}
+-+
+-+	inode = ilookup(buf->sb, ino);
+-+	if (!inode) {
+-+		goto orig_flow;
+-+	}
+-+	if (susfs_is_inode_sus_path(buf->idmap, inode)) {
+-+		iput(inode);
+-+		return true;
+-+	}
+-+	iput(inode);
+-+orig_flow:
+-+#endif
+- 	dirent = buf->current_dir;
+- 	prev = (void __user *) dirent - prev_reclen;
+- 	if (!user_write_access_begin(prev, reclen + prev_reclen))
+-@@ -314,11 +410,36 @@ SYSCALL_DEFINE3(getdents, unsigned int, fd,
++@@ -314,14 +410,39 @@ SYSCALL_DEFINE3(getdents, unsigned int, fd,
+  		.current_dir = dirent
+  	};
+  	int error;
+@@ -1623,6 +1593,9 @@
+ +	struct inode *inode;
+ +#endif
+  
++ 	if (!access_ok(dirent, count))
++ 		return -EFAULT;
++ 
+  	f = fdget_pos(fd);
+  	if (!f.file)
+  		return -EBADF;
+@@ -1678,7 +1651,7 @@
+ @@ -362,6 +492,29 @@ static bool filldir64(struct dir_context *ctx, const char *name, int namlen,
+  	prev_reclen = buf->prev_reclen;
+  	if (prev_reclen && signal_pending(current))
+- 		return false;
++ 		return -EINTR;
+ +
+ +#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+ +	if (buf->is_base_dentry_android_data_root_dir) {
+@@ -1704,8 +1677,8 @@
+ +#endif
+  	dirent = buf->current_dir;
+  	prev = (void __user *)dirent - prev_reclen;
+- 	if (!user_write_access_begin(prev, reclen + prev_reclen))
+-@@ -397,11 +550,36 @@ SYSCALL_DEFINE3(getdents64, unsigned int, fd,
++ 	if (!user_access_begin(prev, reclen + prev_reclen))
++@@ -397,14 +550,39 @@ SYSCALL_DEFINE3(getdents64, unsigned int, fd,
+  		.current_dir = dirent
+  	};
+  	int error;
+@@ -1713,6 +1686,9 @@
+ +	struct inode *inode;
+ +#endif
+  
++ 	if (!access_ok(dirent, count))
++ 		return -EFAULT;
++ 
+  	f = fdget_pos(fd);
+  	if (!f.file)
+  		return -EBADF;
+@@ -1840,31 +1816,31 @@
+ +	bool is_base_dentry_android_data_root_dir;
+ +	bool is_base_dentry_sdcard_root_dir;
+ +#endif
+- 	int prev_reclen;
++ 	struct compat_linux_dirent __user *previous;
+  	int count;
+  	int error;
+ @@ -517,6 +757,9 @@ static bool compat_filldir(struct dir_context *ctx, const char *name, int namlen
++ 	compat_ulong_t d_ino;
+  	int reclen = ALIGN(offsetof(struct compat_linux_dirent, d_name) +
+  		namlen + 2, sizeof(compat_long_t));
+- 	int prev_reclen;
+ +#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+ +	struct inode *inode;
+ +#endif
+  
+- 	buf->error = verify_dirent_name(name, namlen);
+- 	if (unlikely(buf->error))
++ 	buf->error = -EINVAL;	/* only used if we fail.. */
++ 	if (reclen > buf->count)
+ @@ -532,6 +775,28 @@ static bool compat_filldir(struct dir_context *ctx, const char *name, int namlen
+- 	prev_reclen = buf->prev_reclen;
+- 	if (prev_reclen && signal_pending(current))
+- 		return false;
++ 		if (__put_user(offset, &dirent->d_off))
++ 			goto efault;
++ 	}
+ +#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+ +	if (buf->is_base_dentry_android_data_root_dir) {
+ +		if (susfs_is_sus_android_data_d_name_found(name)) {
+-+			return true;
+++			return 0;
+ +		}
+ +	} else if (buf->is_base_dentry_sdcard_root_dir) {
+ +		if (susfs_is_sus_sdcard_d_name_found(name)) {
+-+			return true;
+++			return 0;
+ +		}
+ +	}
+ +
+@@ -1874,15 +1850,15 @@
+ +	}
+ +	if (susfs_is_inode_sus_path(buf->idmap, inode)) {
+ +		iput(inode);
+-+		return true;
+++		return 0;
+ +	}
+ +	iput(inode);
+ +orig_flow:
+ +#endif
+  	dirent = buf->current_dir;
+- 	prev = (void __user *) dirent - prev_reclen;
+- 	if (!user_write_access_begin(prev, reclen + prev_reclen))
+-@@ -565,11 +830,36 @@ COMPAT_SYSCALL_DEFINE3(getdents, unsigned int, fd,
++ 	if (__put_user(d_ino, &dirent->d_ino))
++ 		goto efault;
++@@ -565,14 +830,39 @@ COMPAT_SYSCALL_DEFINE3(getdents, unsigned int, fd,
+  		.count = count
+  	};
+  	int error;
+@@ -1890,6 +1866,9 @@
+ +	struct inode *inode;
+ +#endif
+  
++ 	if (!access_ok(dirent, count))
++ 		return -EFAULT;
++ 
+  	f = fdget_pos(fd);
+  	if (!f.file)
+  		return -EBADF;
