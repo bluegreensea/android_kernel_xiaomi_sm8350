@@ -70,7 +70,7 @@ jobs:
       - name: Install KernelSU
         run: |
           cd "$GITHUB_WORKSPACE/common"
-          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s
+          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s "next"
       - name: Apply SUSFS Patches
         run: |
           cd "$GITHUB_WORKSPACE/common"
@@ -100,19 +100,13 @@ jobs:
           cd ./KernelSU-Next
           cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
           patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
-          
+              
           cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
           patch -p1 --forward < fix_apk_sign.c.patch
           
           cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
           patch -p1 --forward --fuzz=3 < fix_core_hook.c.patch
           
-          cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_selinux.c.patch ./
-          patch -p1 --forward < fix_selinux.c.patch
-          
-          cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_ksud.c.patch ./
-          patch -p1 --forward < fix_ksud.c.patch
-
           cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
           patch -p1 --forward < fix_rules.c.patch
 
