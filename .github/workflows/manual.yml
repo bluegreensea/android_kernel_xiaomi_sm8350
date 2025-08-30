@@ -80,7 +80,7 @@ jobs:
 
           patch -p1 --forward < fix+fs_Makefile+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+fs_exec.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+namei.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          patch -p1 --forward < fix+fs_namei.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+namespace.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+fdinfo.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+fs_open.c+50_add_susfs_in_gki-android15-6.6.patch.patch

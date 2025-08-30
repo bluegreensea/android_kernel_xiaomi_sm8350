@@ -1,5 +1,5 @@
 --- a/50_add_susfs_in_gki-android15-6.6.patch	2025-08-28 22:47:25.723972398 +0800
-+++ fs_namei/50_add_susfs_in_gki-android15-6.6.patch	2025-08-31 01:57:42.578284806 +0800
++++ b/50_add_susfs_in_gki-android15-6.6.patch	2025-08-31 01:57:42.578284806 +0800
 @@ -120,50 +120,50 @@
  +#ifdef CONFIG_KSU_SUSFS_SUS_PATH
  +extern bool susfs_is_sus_android_data_d_name_found(const char *d_name);
