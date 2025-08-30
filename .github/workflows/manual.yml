@@ -100,7 +100,7 @@ jobs:
           cd ./KernelSU-Next
           cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
           patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
-              
+          
           cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
           patch -p1 --forward < fix_apk_sign.c.patch
           
