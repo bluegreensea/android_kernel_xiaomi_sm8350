@@ -122,9 +122,6 @@ jobs:
         run: |
           cd "$GITHUB_WORKSPACE/common"
           
-          cp ../kernel_patches/next/next_hooks_4.14.patch ./
-          patch -p1 -F 3 < next_hooks_4.14.patch
-          
           echo "Applying hooks for KernelSU-Next..."
           cp ../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./
           patch -p1 -F 3 < scope_min_manual_hooks_v1.4.patch
