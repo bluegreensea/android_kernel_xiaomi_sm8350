@@ -1,5 +1,5 @@
 --- a/50_add_susfs_in_gki-android15-6.6.patch	2025-08-25 16:22:46.546968236 +0800
-+++ b_fdinfo/50_add_susfs_in_gki-android15-6.6.patch	2025-08-25 22:53:59.452252008 +0800
++++ b/50_add_susfs_in_gki-android15-6.6.patch	2025-08-25 22:53:59.452252008 +0800
 @@ -1142,7 +1142,7 @@
   	struct fsnotify_group *group = f->private_data;
   	struct fsnotify_mark *mark;

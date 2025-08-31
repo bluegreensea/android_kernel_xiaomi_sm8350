@@ -1,5 +1,5 @@
 --- a/50_add_susfs_in_gki-android15-6.6.patch	2025-08-28 22:47:25.723972398 +0800
-+++ fs_open/50_add_susfs_in_gki-android15-6.6.patch	2025-08-30 22:05:04.148343263 +0800
++++ b/50_add_susfs_in_gki-android15-6.6.patch	2025-08-30 22:05:04.148343263 +0800
 @@ -1210,17 +1210,17 @@
  --- a/fs/open.c
  +++ b/fs/open.c

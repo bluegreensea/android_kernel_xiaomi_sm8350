@@ -1,5 +1,5 @@
 --- a/50_add_susfs_in_gki-android15-6.6.patch	2025-08-28 22:47:25.723972398 +0800
-+++ include_linux_mount/50_add_susfs_in_gki-android15-6.6.patch	2025-08-30 22:37:41.996912510 +0800
++++ b/50_add_susfs_in_gki-android15-6.6.patch	2025-08-30 22:37:41.996912510 +0800
 @@ -2090,9 +2090,9 @@
  +#else
   	ANDROID_KABI_RESERVE(4);
