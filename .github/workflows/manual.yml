@@ -62,33 +62,36 @@ jobs:
           done
           # Export path
           export PATH="$GITHUB_WORKSPACE/toolchains/linux-x86/$latest_clang/bin:$PATH"
-      - name: Clone SUSFS patches
+      - name: Clone Other Dependencies
         run: |
-          cd $GITHUB_WORKSPACE
-          git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "gki-android15-6.6"
+          cd "$GITHUB_WORKSPACE"
+          SUSFS_BRANCH="gki-android15-6.6"
+          echo "Using branch for SUSFS: $SUSFS_BRANCH"
+          git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
           git clone https://github.com/WildPlusKernel/kernel_patches.git
-      - name: Install KernelSU
+      - name: Add KernelSU
         run: |
           cd "$GITHUB_WORKSPACE/common"
           curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s "next"
       - name: Apply SUSFS Patches
         run: |
-          cd "$GITHUB_WORKSPACE/common"
+          cd "$GITHUB_WORKSPACE"
           
           # Copy SUSFS patches
-          cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android15-6.6.patch ./
+          cp susfs4ksu/kernel_patches/50_add_susfs_in_gki-android15-6.6.patch ./common
+          cd common
 
           patch -p1 --forward < fix+fs_Makefile+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+fs_exec.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+fs_namei.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+namespace.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+fdinfo.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          patch -p1 --forward < fix+fs_namespace.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          patch -p1 --forward < fix+fs_notify_fdinfo.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+fs_open.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+bootconfig.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+fd.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          patch -p1 --forward < fix+fs_proc_bootconfig.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          patch -p1 --forward < fix+fs_proc_fd.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+fs_proc_task_mmu.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+fs_readdir.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+stat.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          patch -p1 --forward < fix+fs_stat.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+include_linux_mount.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           patch -p1 --forward < fix+security_selinux_avc.c+50_add_susfs_in_gki-android15-6.6.patch.patch
 
@@ -119,8 +122,8 @@ jobs:
         run: |
           cd "$GITHUB_WORKSPACE/common"
           
-          cp ../kernel_patches/hooks/ksu_hooks_4.14.patch ./
-          patch -p1 -F 3 < ksu_hooks_4.14.patch
+          cp ../kernel_patches/next/next_hooks_4.14.patch ./
+          patch -p1 -F 3 < next_hooks_4.14.patch
           
           echo "Applying hooks for KernelSU-Next..."
           cp ../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./
