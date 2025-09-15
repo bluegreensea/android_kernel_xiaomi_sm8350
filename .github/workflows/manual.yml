@@ -28,6 +28,13 @@ jobs:
           ccache --max-size=2G
           ccache --set-config=compression=true
           echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+      - name: Restore ccache from cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-${{ github.sha }}
+          restore-keys: |
+            ccache-
       - name: Prepare magiskboot
         run: |
           mkdir -p $GITHUB_WORKSPACE/output
@@ -187,6 +194,8 @@ jobs:
           chmod +x build.sh
           LTO=thin ./build.sh
           cp $GITHUB_WORKSPACE/common/out/arch/arm64/boot/Image $GITHUB_WORKSPACE/output
+          ccache --show-stats
+          df -H .
       - name: Modify boot.img
         run: |
           cd $GITHUB_WORKSPACE/output
