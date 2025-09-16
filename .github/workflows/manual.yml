@@ -75,11 +75,17 @@ jobs:
           SUSFS_BRANCH="gki-android15-6.6"
           echo "Using branch for SUSFS: $SUSFS_BRANCH"
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
+          cd susfs4ksu
+          echo "SUSFS_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          cd ..
           git clone https://github.com/WildPlusKernel/kernel_patches.git
       - name: Add KernelSU
         run: |
           cd "$GITHUB_WORKSPACE/common"
           curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s "next"
+          cd KernelSU-Next
+          echo "KSUNEXT_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          cd ..
       - name: Apply SUSFS Patches
         run: |
           cd "$GITHUB_WORKSPACE"
@@ -203,6 +209,7 @@ jobs:
           rm -rf kernel
           mv Image kernel
           ./magiskboot repack boot.img
+          7z a new-boot.7z new-boot.img
       - name: Upload Kernel
         uses: actions/upload-artifact@v4
         with:
@@ -212,4 +219,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.RELEASE_TAG }}
-          files: /home/runner/work/android_kernel_xiaomi_sm8350/android_kernel_xiaomi_sm8350/output/new-boot.img
+          body: |
+            Boot image for LineageOS ${{ env.RELEASE_TAG }} build
+            KernelSU Next ${{ env.KSUNEXT_TAG }} + SUSFS ${{ env.SUSFS_TAG }}
+          files: |
+            /home/runner/work/android_kernel_xiaomi_sm8350/android_kernel_xiaomi_sm8350/output/new-boot.img
+            /home/runner/work/android_kernel_xiaomi_sm8350/android_kernel_xiaomi_sm8350/output/new-boot.7z
+            
