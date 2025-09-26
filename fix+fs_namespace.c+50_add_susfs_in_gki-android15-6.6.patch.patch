@@ -66,7 +66,7 @@
 @@ -1077,9 +1076,9 @@
   }
   
- @@ -5060,3 +5330,37 @@ static int __init init_fs_namespace_sysctls(void)
+ @@ -5060,3 +5330,17 @@ static int __init init_fs_namespace_sysctls(void)
 - fs_initcall(init_fs_namespace_sysctls);
 - 
 - #endif /* CONFIG_SYSCTL */
@@ -74,5 +74,5 @@
 + 	.owner		= mntns_owner,
 + };
  +
- +#ifdef CONFIG_KSU_SUSFS_TRY_UMOUNT
- +extern void susfs_try_umount_all(uid_t uid);
+ +#ifdef CONFIG_KSU_SUSFS
+ +bool susfs_is_mnt_devname_ksu(struct path *path) {
