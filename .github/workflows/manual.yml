@@ -79,16 +79,12 @@ jobs:
           echo "SUSFS_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           cd ..
           git clone https://github.com/WildPlusKernel/kernel_patches.git
-          cd kernel_patches
-          git revert -n deda98ccd279edee1839b002db8ae70aab9a527a
-          git revert -n 5d39f3bf0ed9c950223d6db6b45c861fe3c5a635
-          cd ..
       - name: Add KernelSU
         run: |
           cd "$GITHUB_WORKSPACE/common"
-          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s "next"
-          cd KernelSU-Next
-          echo "KSUNEXT_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          curl -LSs "https://raw.githubusercontent.com/WildKernels/Wild_KSU/wild/kernel/setup.sh" | bash -s wild
+          cd Wild_KSU
+          echo "KSU_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           cd ..
       - name: Apply SUSFS Patches
         run: |
@@ -116,31 +112,31 @@ jobs:
           cp ../susfs4ksu/kernel_patches/fs/* ./fs/
           cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
           
-          echo "Applying SUSFS patches for KernelSU Next..."
-          cd ./KernelSU-Next
+          echo "Applying SUSFS patches..."
+          cd ./Wild_KSU
           cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
           patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
           
-          cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
-          patch -p1 --forward < fix_apk_sign.c.patch
+          # cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
+          # patch -p1 --forward < fix_apk_sign.c.patch
           
-          cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
+          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
           patch -p1 --forward --fuzz=3 < fix_core_hook.c.patch
           
-          # cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
+          # cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
           # patch -p1 --forward < fix_rules.c.patch
 
-          cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
+          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
           patch -p1 --forward < fix_sucompat.c.patch
 
-          cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
+          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
           patch -p1 --forward < fix_kernel_compat.c.patch
       - name: Apply Hooks Patches
         run: |
           cd "$GITHUB_WORKSPACE/common"
           
-          echo "Applying hooks for KernelSU-Next..."
-          cp ../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./
+          echo "Applying hooks..."
+          cp ../kernel_patches/wild/scope_min_manual_hooks_v1.4.patch ./
           patch -p1 -F 3 < scope_min_manual_hooks_v1.4.patch
       - name: Apply Hide Stuff Patches
         run: |
@@ -202,7 +198,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/common
           chmod +x build.sh
-          LTO=thin ./build.sh
+          ./build.sh
           cp $GITHUB_WORKSPACE/common/out/arch/arm64/boot/Image $GITHUB_WORKSPACE/output
           ccache --show-stats
           df -H .
@@ -225,7 +221,7 @@ jobs:
           tag_name: ${{ env.RELEASE_TAG }}
           body: |
             Boot image for LineageOS ${{ env.RELEASE_TAG }} build
-            KernelSU Next ${{ env.KSUNEXT_TAG }} + SUSFS ${{ env.SUSFS_TAG }}
+            KernelSU Wild ${{ env.KSU_TAG }} + SUSFS ${{ env.SUSFS_TAG }}
           files: |
             /home/runner/work/android_kernel_xiaomi_sm8350/android_kernel_xiaomi_sm8350/output/new-boot.img
             /home/runner/work/android_kernel_xiaomi_sm8350/android_kernel_xiaomi_sm8350/output/new-boot.7z
