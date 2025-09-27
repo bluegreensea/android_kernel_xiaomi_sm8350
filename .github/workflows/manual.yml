@@ -93,44 +93,44 @@ jobs:
           # Copy SUSFS patches
           cp susfs4ksu/kernel_patches/50_add_susfs_in_gki-android15-6.6.patch ./common
           cd common
-
-          patch -p1 --forward < fix+fs_Makefile+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+fs_exec.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+fs_namei.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+fs_namespace.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+fs_notify_fdinfo.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+fs_open.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+fs_proc_bootconfig.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+fs_proc_fd.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+fs_proc_task_mmu.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+fs_readdir.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+fs_stat.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+include_linux_mount.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-          patch -p1 --forward < fix+security_selinux_avc.c+50_add_susfs_in_gki-android15-6.6.patch.patch
-
-          patch -p1 --forward < 50_add_susfs_in_gki-android15-6.6.patch
-          cp ../susfs4ksu/kernel_patches/fs/* ./fs/
-          cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
           
-          echo "Applying SUSFS patches..."
-          cd ./Wild_KSU
-          cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-          patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
-          
-          # cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
-          # patch -p1 --forward < fix_apk_sign.c.patch
-          
-          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
-          patch -p1 --forward --fuzz=3 < fix_core_hook.c.patch
-          
-          # cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
-          # patch -p1 --forward < fix_rules.c.patch
-
-          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
-          patch -p1 --forward < fix_sucompat.c.patch
-
-          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
-          patch -p1 --forward < fix_kernel_compat.c.patch
+          # patch -p1 --forward < fix+fs_Makefile+50_add_susfs_in_gki-android15-6.6.patch.patch
+          # patch -p1 --forward < fix+fs_exec.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          # patch -p1 --forward < fix+fs_namei.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          # patch -p1 --forward < fix+fs_namespace.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          # patch -p1 --forward < fix+fs_notify_fdinfo.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          # patch -p1 --forward < fix+fs_open.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          # patch -p1 --forward < fix+fs_proc_bootconfig.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          # patch -p1 --forward < fix+fs_proc_fd.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          # patch -p1 --forward < fix+fs_proc_task_mmu.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          # patch -p1 --forward < fix+fs_readdir.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          # patch -p1 --forward < fix+fs_stat.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          # patch -p1 --forward < fix+include_linux_mount.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          # patch -p1 --forward < fix+security_selinux_avc.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          # 
+          # patch -p1 --forward < 50_add_susfs_in_gki-android15-6.6.patch
+          # cp ../susfs4ksu/kernel_patches/fs/* ./fs/
+          # cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
+          # 
+          # echo "Applying SUSFS patches..."
+          # cd ./Wild_KSU
+          # cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+          # patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
+          # 
+          # # cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
+          # # patch -p1 --forward < fix_apk_sign.c.patch
+          # 
+          # cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
+          # patch -p1 --forward --fuzz=3 < fix_core_hook.c.patch
+          # 
+          # # cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
+          # # patch -p1 --forward < fix_rules.c.patch
+          # 
+          # cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
+          # patch -p1 --forward < fix_sucompat.c.patch
+          # 
+          # cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
+          # patch -p1 --forward < fix_kernel_compat.c.patch
       - name: Apply Hooks Patches
         run: |
           cd "$GITHUB_WORKSPACE/common"
@@ -147,7 +147,7 @@ jobs:
         run: |
           cd "$GITHUB_WORKSPACE/common"
           echo "Adding configuration settings to lisa_defconfig..."
-
+          
           # Add KSU configuration settings
           echo "CONFIG_KSU=y" >> ./arch/arm64/configs/lisa_defconfig
           
@@ -156,12 +156,12 @@ jobs:
           # Add additional tmpfs config setting
           echo "CONFIG_TMPFS_XATTR=y" >> ./arch/arm64/configs/lisa_defconfig
           echo "CONFIG_TMPFS_POSIX_ACL=y" >> ./arch/arm64/configs/lisa_defconfig
-
+          
           # Add additional config setting
           echo "CONFIG_IP_NF_TARGET_TTL=y" >> ./arch/arm64/configs/lisa_defconfig
           echo "CONFIG_IP6_NF_TARGET_HL=y" >> ./arch/arm64/configs/lisa_defconfig
           echo "CONFIG_IP6_NF_MATCH_HL=y" >> ./arch/arm64/configs/lisa_defconfig
-
+          
           # Add BBR Config
           echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./arch/arm64/configs/lisa_defconfig 
           echo "CONFIG_TCP_CONG_BBR=y" >> ./arch/arm64/configs/lisa_defconfig
@@ -169,13 +169,13 @@ jobs:
           echo "CONFIG_TCP_CONG_BIC=n" >> ./arch/arm64/configs/lisa_defconfig
           echo "CONFIG_TCP_CONG_WESTWOOD=n" >> ./arch/arm64/configs/lisa_defconfig
           echo "CONFIG_TCP_CONG_HTCP=n" >> ./arch/arm64/configs/lisa_defconfig 
-
+          
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./build.config.gki
       - name: Add SUSFS Configuration Settings
         run: |
           cd "$GITHUB_WORKSPACE/common"
-
+          
           # Add SUSFS configuration settings
           echo "CONFIG_KSU_SUSFS=y" >> ./arch/arm64/configs/lisa_defconfig
           echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> ./arch/arm64/configs/lisa_defconfig
@@ -192,7 +192,7 @@ jobs:
           echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> ./arch/arm64/configs/lisa_defconfig
           echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=n" >> ./arch/arm64/configs/lisa_defconfig
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./arch/arm64/configs/lisa_defconfig
-
+          
           echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./arch/arm64/configs/lisa_defconfig
       - name: Build Kernel
         run: |
