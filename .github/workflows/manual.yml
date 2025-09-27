@@ -79,6 +79,10 @@ jobs:
           echo "SUSFS_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           cd ..
           git clone https://github.com/WildPlusKernel/kernel_patches.git
+          cd kernel_patches
+          git revert -n deda98ccd279edee1839b002db8ae70aab9a527a
+          git revert -n 5d39f3bf0ed9c950223d6db6b45c861fe3c5a635
+          cd ..
       - name: Add KernelSU
         run: |
           cd "$GITHUB_WORKSPACE/common"
