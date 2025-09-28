@@ -1,0 +1,30 @@
+--- a/50_add_susfs_in_gki-android15-6.6.patch	2025-08-25 16:22:46.546968236 +0800
++++ b/50_add_susfs_in_gki-android15-6.6.patch	2025-08-25 22:30:56.621773194 +0800
+@@ -1296,7 +1296,7 @@
+  
+  	task = get_proc_task(m->private);
+  	if (!task)
+-@@ -56,11 +62,49 @@ static int seq_show(struct seq_file *m, void *v)
++@@ -56,10 +62,48 @@ static int seq_show(struct seq_file *m, void *v)
+  	if (ret)
+  		return ret;
+  
+@@ -1337,15 +1337,14 @@
+ +		   file_inode(file)->i_ino);
+ +bypass_orig_flow:
+ +#else
+- 	seq_printf(m, "pos:\t%lli\nflags:\t0%o\nmnt_id:\t%i\nino:\t%lu\n",
++ 	seq_printf(m, "pos:\t%lli\nflags:\t0%o\nmnt_id:\t%i\n",
+  		   (long long)file->f_pos, f_flags,
+- 		   real_mount(file->f_path.mnt)->mnt_id,
+- 		   file_inode(file)->i_ino);
++ 		   real_mount(file->f_path.mnt)->mnt_id);
+  
+ +#endif
+- 	/* show_fd_locks() never deferences files so a stale value is safe */
+  	show_fd_locks(m, file, files);
+  	if (seq_has_overflowed(m))
++ 		goto out;
+ diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+ index f70d8709cc4b..191491362056 100644
+ --- a/fs/proc/task_mmu.c

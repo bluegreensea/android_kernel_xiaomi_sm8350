@@ -1,0 +1,78 @@
+--- a/50_add_susfs_in_gki-android15-6.6.patch	2025-08-28 22:47:25.723972398 +0800
++++ b/50_add_susfs_in_gki-android15-6.6.patch	2025-08-29 04:28:43.957483048 +0800
+@@ -644,18 +644,16 @@
+ index 2d0231797d0d..b8d7791922a4 100644
+ --- a/fs/namespace.c
+ +++ b/fs/namespace.c
+-@@ -32,12 +32,38 @@
++@@ -32,10 +32,36 @@
++ #include <uapi/linux/mount.h>
+  #include <linux/fs_context.h>
+  #include <linux/shmem_fs.h>
+- #include <linux/mnt_idmapping.h>
+ +#if defined(CONFIG_KSU_SUSFS_SUS_MOUNT) || defined(CONFIG_KSU_SUSFS_TRY_UMOUNT)
+ +#include <linux/susfs_def.h>
+ +#endif
+  
+  #include "pnode.h"
+  #include "internal.h"
+- #include <trace/hooks/blk.h>
+- #include <trace/hooks/fs.h>
+  
+ +#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+ +extern bool susfs_is_current_ksu_domain(void);
+@@ -681,7 +679,7 @@
+ +#endif
+ +
+  /* Maximum number of mounts in a mount namespace */
+- static unsigned int sysctl_mount_max __read_mostly = 100000;
++ unsigned int sysctl_mount_max __read_mostly = 100000;
+  
+ @@ -126,6 +152,18 @@ static inline struct hlist_head *mp_hash(struct dentry *dentry)
+  	return &mountpoint_hashtable[tmp & mp_hash_mask];
+@@ -798,10 +796,10 @@
+  		if (err)
+  			goto out_free_cache;
+  
+-@@ -1081,11 +1179,26 @@ static struct mount *skip_mnt_tree(struct mount *p)
+- struct vfsmount *vfs_create_mount(struct fs_context *fc)
++@@ -1081,12 +1179,27 @@ static struct mount *skip_mnt_tree(struct mount *p)
+  {
+  	struct mount *mnt;
++ 	struct super_block *sb;
+ +#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+ +	struct mount *m;
+ +	struct mnt_namespace *mnt_ns;
+@@ -810,6 +808,7 @@
+  
+  	if (!fc->root)
+  		return ERR_PTR(-EINVAL);
++ 	sb = fc->root->d_sb;
+  
+ +#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+ +	// For newly created mounts, the only caller process we care is KSU
+@@ -1045,9 +1044,9 @@
+ +			q->mnt_id = ++last_entry_mnt_id;
+ +		}
+ +#endif
+- 		// an mntns binding we'd skipped?
+  		while (p->mnt.mnt_root != q->mnt.mnt_root)
+- 			p = next_mnt(skip_mnt_tree(p), old);
++ 			p = next_mnt(p, old);
++ 	}
+ @@ -3919,6 +4175,13 @@ SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
+  
+  	ret = do_mount(kernel_dev, dir_name, kernel_type, flags, options);
+@@ -1077,9 +1076,9 @@
+  }
+  
+ @@ -5060,3 +5330,17 @@ static int __init init_fs_namespace_sysctls(void)
+- fs_initcall(init_fs_namespace_sysctls);
+- 
+- #endif /* CONFIG_SYSCTL */
++ 	.install	= mntns_install,
++ 	.owner		= mntns_owner,
++ };
+ +
+ +#ifdef CONFIG_KSU_SUSFS
+ +bool susfs_is_mnt_devname_ksu(struct path *path) {
