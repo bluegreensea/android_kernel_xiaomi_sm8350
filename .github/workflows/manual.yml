@@ -79,6 +79,10 @@ jobs:
           echo "SUSFS_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           cd ..
           git clone https://github.com/WildPlusKernel/kernel_patches.git
+      - name: Apply ptrace patch
+        run: |
+          cd "$GITHUB_WORKSPACE/common"
+          patch -p1 -F 3 < "../kernel_patches/gki_ptrace.patch"
       - name: Add KernelSU
         run: |
           cd "$GITHUB_WORKSPACE/common"
@@ -138,6 +142,11 @@ jobs:
           echo "Applying hooks..."
           cp ../kernel_patches/wild/hooks/scope_min_manual_hooks_v1.4.patch ./
           patch -p1 -F 3 < scope_min_manual_hooks_v1.4.patch
+      - name: Apply Module Symbol Version Fix Patch
+        run: |
+          cd "$GITHUB_WORKSPACE/common/kernel"
+          #sed -i 's/pr_warn("%s: disagrees about version of symbol %s\\n"/pr_warn("%s: disagrees about version of symbol %s, but ignore...\\n"/' module.c
+          sed -i '/bad_version:/{:a;n;/return 0;/{s/return 0;/return 1;/;b};ba}' module.c
       - name: Apply Hide Stuff Patches
         run: |
           cd "$GITHUB_WORKSPACE/common"
@@ -145,55 +154,79 @@ jobs:
           patch -p1 -F 3 < 69_hide_stuff.patch
       - name: Add Configuration Settings
         run: |
-          cd "$GITHUB_WORKSPACE/common"
-          echo "Adding configuration settings to lisa_defconfig..."
+          cd "$GITHUB_WORKSPACE"
           
-          # Add KSU configuration settings
-          echo "CONFIG_KSU=y" >> ./arch/arm64/configs/lisa_defconfig
+          defconfig="./common/arch/arm64/configs/lisa_defconfig"
           
-          echo "CONFIG_KSU_KPROBES_HOOK=n" >> ./arch/arm64/configs/lisa_defconfig
+          echo "Applying kernel configurations one by one..."
           
-          # Add additional tmpfs config setting
-          echo "CONFIG_TMPFS_XATTR=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_TMPFS_POSIX_ACL=y" >> ./arch/arm64/configs/lisa_defconfig
+          # KernelSU Core Configuration
+          echo "CONFIG_KSU=y" >> "$defconfig"
+          echo "CONFIG_KSU_KPROBES_HOOK=n" >> "$defconfig"
           
-          # Add additional config setting
-          echo "CONFIG_IP_NF_TARGET_TTL=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_IP6_NF_TARGET_HL=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_IP6_NF_MATCH_HL=y" >> ./arch/arm64/configs/lisa_defconfig
+          # Mountify Support
+          echo "CONFIG_TMPFS_XATTR=y" >> "$defconfig"
+          echo "CONFIG_TMPFS_POSIX_ACL=y" >> "$defconfig"
           
-          # Add BBR Config
-          echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./arch/arm64/configs/lisa_defconfig 
-          echo "CONFIG_TCP_CONG_BBR=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_NET_SCH_FQ=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_TCP_CONG_BIC=n" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_TCP_CONG_WESTWOOD=n" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_TCP_CONG_HTCP=n" >> ./arch/arm64/configs/lisa_defconfig 
+          # Networking Configuration
+          echo "CONFIG_IP_NF_TARGET_TTL=y" >> "$defconfig"
+          echo "CONFIG_IP6_NF_TARGET_HL=y" >> "$defconfig"
+          echo "CONFIG_IP6_NF_MATCH_HL=y" >> "$defconfig"
+          
+          # BBR TCP Congestion Control
+          echo "CONFIG_TCP_CONG_ADVANCED=y" >> "$defconfig"
+          echo "CONFIG_TCP_CONG_BBR=y" >> "$defconfig"
+          echo "CONFIG_NET_SCH_FQ=y" >> "$defconfig"
+          echo "CONFIG_TCP_CONG_BIC=n" >> "$defconfig"
+          echo "CONFIG_TCP_CONG_WESTWOOD=n" >> "$defconfig"
+          echo "CONFIG_TCP_CONG_HTCP=n" >> "$defconfig"
+          
+          # IPSet support
+          echo "CONFIG_IP_SET=y" >> "$defconfig"
+          echo "CONFIG_IP_SET_MAX=256" >> "$defconfig"
+          echo "CONFIG_IP_SET_BITMAP_IP=y" >> "$defconfig"
+          echo "CONFIG_IP_SET_BITMAP_IPMAC=y" >> "$defconfig"
+          echo "CONFIG_IP_SET_BITMAP_PORT=y" >> "$defconfig"
+          echo "CONFIG_IP_SET_HASH_IP=y" >> "$defconfig"
+          echo "CONFIG_IP_SET_HASH_IPPORT=y" >> "$defconfig"
+          echo "CONFIG_IP_SET_HASH_IPPORTIP=y" >> "$defconfig"
+          echo "CONFIG_IP_SET_HASH_IPPORTNET=y" >> "$defconfig"
+          echo "CONFIG_IP_SET_HASH_NET=y" >> "$defconfig"
+          echo "CONFIG_IP_SET_HASH_NETNET=y" >> "$defconfig"
+          echo "CONFIG_IP_SET_HASH_NETPORT=y" >> "$defconfig"
+          echo "CONFIG_IP_SET_HASH_NETIFACE=y" >> "$defconfig"
+          # SUSFS Configuration
+          echo "CONFIG_KSU_SUSFS=y" >> "$defconfig"
+          echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> "$defconfig"
+          echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "$defconfig"
+          echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "$defconfig"
+          
+          # SUSFS Auto Mount Features
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "$defconfig"
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "$defconfig"
+          echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "$defconfig"
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "$defconfig"
+          
+          # SUSFS Advanced Features
+          echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> "$defconfig"
+          echo "CONFIG_KSU_SUSFS_SUS_OVERLAYFS=n" >> "$defconfig"
+          echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "$defconfig"
+          echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "$defconfig"
+          echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "$defconfig"
+          
+          # SUSFS Debugging and Security
+          echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> "$defconfig"
+          echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "$defconfig"
+          echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> "$defconfig"
+          
+          # Build Optimization Configuration
+          echo "CONFIG_LTO_CLANG_THIN=y" >> "$defconfig"
+          echo "CONFIG_LTO_CLANG=y" >> "$defconfig"
+          echo "CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y" >> "$defconfig"
+          echo "CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE_O3=n" >> "$defconfig"
           
           # Remove check_defconfig
-          sed -i 's/check_defconfig//' ./build.config.gki
-      - name: Add SUSFS Configuration Settings
-        run: |
-          cd "$GITHUB_WORKSPACE/common"
-          
-          # Add SUSFS configuration settings
-          echo "CONFIG_KSU_SUSFS=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_KSU_SUSFS_SUS_OVERLAYFS=n" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=n" >> ./arch/arm64/configs/lisa_defconfig
-          echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./arch/arm64/configs/lisa_defconfig
-          
-          echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./arch/arm64/configs/lisa_defconfig
+          sed -i 's/check_defconfig//' ./common/build.config.gki
       - name: Build Kernel
         run: |
           cd $GITHUB_WORKSPACE/common
