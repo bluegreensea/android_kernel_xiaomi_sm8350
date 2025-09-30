@@ -255,7 +255,7 @@ jobs:
       - name: Upload Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: b${{ env.RELEASE_TAG }}-test-2
+          tag_name: b${{ env.RELEASE_TAG }}
           body: |
             Boot image for LineageOS build ${{ env.RELEASE_TAG }}
             KernelSU Wild ${{ env.KSU_SHA }} + SUSFS ${{ env.SUSFS_SHA }}
