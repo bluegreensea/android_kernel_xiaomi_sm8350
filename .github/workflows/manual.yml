@@ -121,7 +121,6 @@ jobs:
           echo -e "\033[0;32minfo: fix fs/stat.c patch\e[0m"
           patch -p1 --forward < fix-11+fs_stat.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           echo -e "\033[0;32minfo: fix include/linux/mount.h patch\e[0m"
-          patch -p1 --forward < fix-12+include_linux_mount.h+backport.patch
           patch -p1 --forward < fix-12+include_linux_mount.h+50_add_susfs_in_gki-android15-6.6.patch.patch
           echo -e "\033[0;32minfo: fix security/selinux/avc.c patch\e[0m"
           patch -p1 --forward < fix-13+security_selinux_avc.c+50_add_susfs_in_gki-android15-6.6.patch.patch
