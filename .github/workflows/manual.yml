@@ -142,6 +142,10 @@ jobs:
           echo "Applying hooks..."
           cp ../kernel_patches/wild/hooks/scope_min_manual_hooks_v1.4.patch ./
           patch -p1 -F 3 < scope_min_manual_hooks_v1.4.patch
+      - name: Apply KernelSU Symbol Fix Patch
+        run: |
+          cd "$GITHUB_WORKSPACE/Wild_KSU/kernel"
+          sed -i 's|\(atomic_set(&current->seccomp.filter_count, 0);\)|// \1|' core_hook.c
       # - name: Apply Module Symbol Version Fix Patch
       #   run: |
       #     cd "$GITHUB_WORKSPACE/common/kernel"
@@ -251,7 +255,7 @@ jobs:
       - name: Upload Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: b${{ env.RELEASE_TAG }}-test-1
+          tag_name: b${{ env.RELEASE_TAG }}-test-2
           body: |
             Boot image for LineageOS build ${{ env.RELEASE_TAG }}
             KernelSU Wild ${{ env.KSU_SHA }} + SUSFS ${{ env.SUSFS_SHA }}
