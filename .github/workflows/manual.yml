@@ -98,18 +98,31 @@ jobs:
           cp susfs4ksu/kernel_patches/50_add_susfs_in_gki-android15-6.6.patch ./common
           cd common
           
+          echo -e "\033[0;32minfo: fix fs/Makefile patch\e[0m"
           patch -p1 --forward < fix+fs_Makefile+50_add_susfs_in_gki-android15-6.6.patch.patch
+          echo -e "\033[0;32minfo: fix fs/exec.c patch\e[0m"
           patch -p1 --forward < fix+fs_exec.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          echo -e "\033[0;32minfo: fix fs/namei.c patch\e[0m"
           patch -p1 --forward < fix+fs_namei.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          echo -e "\033[0;32minfo: fix fs/namespace.c patch\e[0m"
           patch -p1 --forward < fix+fs_namespace.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          echo -e "\033[0;32minfo: fix fs/notify/fdinfo.c patch\e[0m"
           patch -p1 --forward < fix+fs_notify_fdinfo.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          echo -e "\033[0;32minfo: fix fs/open.c patch\e[0m"
           patch -p1 --forward < fix+fs_open.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          echo -e "\033[0;32minfo: fix fs/proc/bootconfig.c patch\e[0m"
           patch -p1 --forward < fix+fs_proc_bootconfig.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          echo -e "\033[0;32minfo: fix fs/proc/fd.c patch\e[0m"
           patch -p1 --forward < fix+fs_proc_fd.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          echo -e "\033[0;32minfo: fix fs/proc/task_mmu.c patch\e[0m"
           patch -p1 --forward < fix+fs_proc_task_mmu.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          echo -e "\033[0;32minfo: fix fs/readdir.c patch\e[0m"
           patch -p1 --forward < fix+fs_readdir.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          echo -e "\033[0;32minfo: fix fs/stat.c patch\e[0m"
           patch -p1 --forward < fix+fs_stat.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          echo -e "\033[0;32minfo: fix include/linux/mount.h patch\e[0m"
           patch -p1 --forward < fix+include_linux_mount.c+50_add_susfs_in_gki-android15-6.6.patch.patch
+          echo -e "\033[0;32minfo: fix security/selinux/avc.c patch\e[0m"
           patch -p1 --forward < fix+security_selinux_avc.c+50_add_susfs_in_gki-android15-6.6.patch.patch
           
           patch -p1 --forward < 50_add_susfs_in_gki-android15-6.6.patch
