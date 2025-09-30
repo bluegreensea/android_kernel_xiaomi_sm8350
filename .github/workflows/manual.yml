@@ -144,7 +144,7 @@ jobs:
           patch -p1 -F 3 < scope_min_manual_hooks_v1.4.patch
       - name: Apply KernelSU Symbol Fix Patch
         run: |
-          cd "$GITHUB_WORKSPACE/Wild_KSU/kernel"
+          cd "$GITHUB_WORKSPACE/common/Wild_KSU/kernel"
           sed -i 's|\(atomic_set(&current->seccomp.filter_count, 0);\)|// \1|' core_hook.c
       # - name: Apply Module Symbol Version Fix Patch
       #   run: |
