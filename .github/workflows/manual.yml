@@ -75,8 +75,10 @@ jobs:
           SUSFS_BRANCH="gki-android15-6.6"
           echo "Using branch for SUSFS: $SUSFS_BRANCH"
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
+          echo "SUSFS_REPO=https://gitlab.com/simonpunk/susfs4ksu" >> $GITHUB_ENV
           cd susfs4ksu
-          echo "SUSFS_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "SUSFS_SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "SUSFS_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
           cd ..
           git clone https://github.com/WildPlusKernel/kernel_patches.git
       - name: Apply ptrace patch
@@ -86,9 +88,12 @@ jobs:
       - name: Add KernelSU
         run: |
           cd "$GITHUB_WORKSPACE/common"
-          curl -LSs "https://raw.githubusercontent.com/WildKernels/Wild_KSU/wild/kernel/setup.sh" | bash -s wild
-          cd Wild_KSU
-          echo "KSU_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s next
+          echo "KSU_REPO=https://github.com/KernelSU-Next/KernelSU-Next" >> $GITHUB_ENV
+          cd KernelSU-Next
+          echo "KSU_SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "KSU_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          git revert -n d9239343e697ff497ea0037e242303e9b66e9a7e
           cd ..
       - name: Apply SUSFS Patches
         run: |
@@ -131,34 +136,34 @@ jobs:
           cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
           
           echo "Applying SUSFS patches..."
-          cd ./Wild_KSU
+          cd ./KernelSU-Next
           cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
           patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
           
-          # cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
-          # patch -p1 --forward < fix_apk_sign.c.patch
+          cp ../../kernel_patches/next/susfs_fix_patches/v1.5.10/fix_apk_sign.c.patch ./
+          patch -p1 --forward < fix_apk_sign.c.patch
           
-          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
+          cp ../../kernel_patches/next/susfs_fix_patches/v1.5.10/fix_core_hook.c.patch ./
           patch -p1 --forward --fuzz=3 < fix_core_hook.c.patch
           
           # cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
           # patch -p1 --forward < fix_rules.c.patch
           
-          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
+          cp ../../kernel_patches/next/susfs_fix_patches/v1.5.10/fix_sucompat.c.patch ./
           patch -p1 --forward < fix_sucompat.c.patch
           
-          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
+          cp ../../kernel_patches/next/susfs_fix_patches/v1.5.10/fix_kernel_compat.c.patch ./
           patch -p1 --forward < fix_kernel_compat.c.patch
       - name: Apply Hooks Patches
         run: |
           cd "$GITHUB_WORKSPACE/common"
           
           echo "Applying hooks..."
-          cp ../kernel_patches/wild/hooks/scope_min_manual_hooks_v1.4.patch ./
+          cp ../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./
           patch -p1 -F 3 < scope_min_manual_hooks_v1.4.patch
       - name: Apply KernelSU Symbol Fix Patch
         run: |
-          cd "$GITHUB_WORKSPACE/common/Wild_KSU/kernel"
+          cd "$GITHUB_WORKSPACE/common/KernelSU-Next/kernel"
           sed -i 's|\(atomic_set(&current->seccomp.filter_count, 0);\)|// \1|' core_hook.c
       # - name: Apply Module Symbol Version Fix Patch
       #   run: |
@@ -272,7 +277,7 @@ jobs:
           tag_name: b${{ env.RELEASE_TAG }}
           body: |
             Boot image for LineageOS build ${{ env.RELEASE_TAG }}
-            KernelSU Wild ${{ env.KSU_SHA }} + SUSFS ${{ env.SUSFS_SHA }}
+            KernelSU Next [${{ env.KSU_SHORT_SHA }}](${{ env.KSU_REPO }}/commit/${{ env.KSU_SHA }}) + SUSFS [${{ env.SUSFS_SHORT_SHA }}](${{ env.SUSFS_REPO }}/commit/${{ env.SUSFS_SHA }})
           files: |
             /home/runner/work/android_kernel_xiaomi_sm8350/android_kernel_xiaomi_sm8350/output/new-boot.img
             /home/runner/work/android_kernel_xiaomi_sm8350/android_kernel_xiaomi_sm8350/output/new-boot.7z
