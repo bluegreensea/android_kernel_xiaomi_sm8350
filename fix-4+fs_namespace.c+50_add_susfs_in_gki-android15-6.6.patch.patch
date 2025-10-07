@@ -35,7 +35,7 @@
   	mnt->mnt_group_id = 0;
   }
 -@@ -196,6 +268,112 @@ int mnt_get_count(struct mount *mnt)
-+@@ -196,6 +268,111 @@ int mnt_get_count(struct mount *mnt)
++@@ -196,6 +268,110 @@ int mnt_get_count(struct mount *mnt)
   #endif
   }
   
@@ -47,7 +47,15 @@
  +	}
  +	return mnt;
  +
-@@ -882,9 +879,9 @@
+@@ -864,7 +861,6 @@
+ +		INIT_HLIST_NODE(&mnt->mnt_mp_list);
+ +		INIT_LIST_HEAD(&mnt->mnt_umounting);
+ +		INIT_HLIST_HEAD(&mnt->mnt_stuck_children);
+-+		mnt->mnt.mnt_idmap = &nop_mnt_idmap;
+ +	}
+ +	return mnt;
+ +
+@@ -882,9 +878,9 @@
   {
   	struct mount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
  @@ -223,6 +401,10 @@ static struct mount *alloc_vfsmnt(const char *name)
@@ -58,7 +66,7 @@
  +#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
  +		// Make sure mnt->mnt.susfs_mnt_id_backup is initialized every time.
  +		mnt->mnt.susfs_mnt_id_backup = 0;
-@@ -893,8 +890,8 @@
+@@ -893,8 +889,8 @@
   		INIT_HLIST_NODE(&mnt->mnt_hash);
   		INIT_LIST_HEAD(&mnt->mnt_child);
  @@ -1085,7 +1267,25 @@ struct vfsmount *vfs_create_mount(struct fs_context *fc)
@@ -68,7 +76,7 @@
   
  +#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
  +	// - We do not check anymore if boot-completed stage is triggered
-@@ -1032,9 +1029,9 @@
+@@ -1032,9 +1028,9 @@
   }
   
  @@ -5060,3 +5337,38 @@ static int __init init_fs_namespace_sysctls(void)
