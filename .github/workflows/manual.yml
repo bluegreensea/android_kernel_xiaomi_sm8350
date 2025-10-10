@@ -93,7 +93,7 @@ jobs:
           cd KernelSU-Next
           echo "KSU_SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           echo "KSU_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
-          git revert -n d9239343e697ff497ea0037e242303e9b66e9a7e
+          git revert -n d9239343e697ff497ea0037e242303e9b66e9a7e # kernel: auto patch struct seccomp to include filter_count
           cd ..
       - name: Apply SUSFS Patches
         run: |
